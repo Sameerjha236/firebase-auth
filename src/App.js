@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  onAuthStateChanged,
   signOut,
 } from "firebase/auth";
 import { auth } from "./firebase-config";
@@ -13,12 +12,14 @@ function App() {
   const [rpassword, setRpassword] = useState("");
   const [Lemail, setLemail] = useState("");
   const [Lpassword, setLpassword] = useState("");
+  const [user, setUser] = useState(null);
 
-  const [user, setUser] = useState("");
-
-  onAuthStateChanged(auth, (currentUser) => {
+  const unsubscribe = auth.onAuthStateChanged((currentUser) => {
     setUser(currentUser);
   });
+  useEffect(() => {
+    return unsubscribe;
+  }, []);
 
   const register = async () => {
     try {
@@ -68,7 +69,6 @@ function App() {
           value={remail}
           onChange={(e) => setRemail(e.target.value)}
         />
-
         <input
           type="password"
           value={rpassword}
@@ -97,8 +97,14 @@ function App() {
 
       <div className="status">
         <h3>User logged in</h3>
-        <h4>{user?.email}</h4>
-        <button onClick={logout}>Sign Out</button>
+        {user ? (
+          <>
+            <h4>{user.email}</h4>
+            <button onClick={logout}>Sign Out</button>
+          </>
+        ) : (
+          <p>User not logged in</p>
+        )}
       </div>
     </div>
   );
